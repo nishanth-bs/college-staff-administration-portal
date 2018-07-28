@@ -12,6 +12,24 @@ def generate_hash(password):
 def verify_hash(password, hash):
   return sha256.verify(password, hash)
 
+def add_revoked_token():
+  pass
+
+def check_if_revoked_token(jti):
+  pass
+
+
+class AccessToken(Resource):
+  def get(self):
+    return {get_jwt_identity():1}
+
+  @jwt_refresh_token_required
+  def post(self):
+    current_user = get_jwt_identity()
+    access_token = create_access_token(identity=current_user)
+    return {'access_token':access_token}
+
+
 #import resources
 app = Flask(__name__)
 api = Api(app)
@@ -24,6 +42,15 @@ app.config['MYSQL_DATABASE_HOST'] = '127.0.0.1'
 
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string' #''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
 jwt = JWTManager(app)
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+
+    return is_jti_blacklisted(jti)
 
 mysql.init_app(app)
 conn = mysql.connect()
@@ -37,6 +64,24 @@ parser.add_argument('password', help = 'This field cannot be blank', required = 
 
 QUERY1 = "INSERT INTO `signup_and_login_users_table`(`dept_id`, `fullname`, `username`, `password`, `user_levels`,`email`,`phone`) VALUES (1,'as','%s','%s',0,0,0)"
 QUERY2 = "SELECT * FROM `signup_and_login_users_table` where username = '%s'"
+
+@jwt_required
+def add(jti):
+  #jti = get_raw_jwt()['jti']
+  QUERY4 = "INSERT INTO `revoked_tokens`( `jti`) VALUES ('%s')" %(jti)
+  cursor.execute(QUERY4)
+  conn.commit()
+  #db.session.add(self)
+  #db.session.commit()
+
+def is_jti_blacklisted(jti):
+  QUERY3 = "SELECT * FROM `revoked_tokens` WHERE jti = '%s'"%(jti)
+  cursor.execute(QUERY3)
+  #query = query.filter_by(jti=jti).first()
+  if cursor.rowcount == 0:
+    return False
+  else:
+    return True
 class UserRegistration(Resource):
   def post(self):
     data = parser.parse_args()
@@ -79,13 +124,29 @@ class UserLogin(Resource):
 
 
 class UserLogoutAccess(Resource):
+  @jwt_required
   def post(self):
-    return {'message': 'User logout'}
+    jti = get_raw_jwt()['jti']
+    try:
+      add(jti)
+      #revoked_token = RevokedTokenModel(jti=jti)
+      #revoked_token.add()
+      return {'message': 'Access token has been revoked'}
+    except:
+      return {'message': 'Something went wrong'}, 500
 
 
 class UserLogoutRefresh(Resource):
+  @jwt_refresh_token_required
   def post(self):
-    return {'message': 'User logout'}
+    jti = get_raw_jwt()['jti']
+    try:
+      add(jti)
+      #revoked_token = RevokedTokenModel(jti=jti)
+      #revoked_token.add()
+      return {'message': 'Refresh token has been revoked'}
+    except:
+      return {'message': 'Something went wrong'}, 500
 
 
 class TokenRefresh(Resource):
@@ -102,9 +163,11 @@ class AllUsers(Resource):
 
 
 class SecretResource(Resource):
+  @jwt_required
   def get(self):
     return {
-      'answer': 42
+      'answer': get_jwt_identity(),
+      1: get_raw_jwt()['jti']
     }
 
 api.add_resource(UserRegistration, '/registration')
@@ -114,6 +177,7 @@ api.add_resource(UserLogoutRefresh, '/logout/refresh')
 api.add_resource(TokenRefresh, '/token/refresh')
 api.add_resource(AllUsers, '/users')
 api.add_resource(SecretResource, '/secret')
+api.add_resource(AccessToken,'/access')
 
 if __name__ == '__main__':
     app.run(debug=True)
