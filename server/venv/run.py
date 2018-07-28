@@ -170,6 +170,118 @@ class SecretResource(Resource):
       1: get_raw_jwt()['jti']
     }
 
+class CollegeDepartments(Resource):
+  def get(self):
+    #retrieve all the department names
+    return ''
+  def post(self):
+    #TODO: give super admin access
+    #able to add new department
+    return ''
+  def put(self):
+    #TODO: give super admin access
+    #edit the department details
+    return ''
+  def delete(self):
+    #todo: give super admin access
+    #req specification: not sure  if deleting dept option is needed
+    return ''
+
+class Teacher(Resource):
+  def get(self):
+    #retrieve all the teachers of [the current logged in user's dept]
+    return ''
+  def post(self):
+    #add new teacher to the department
+    return ''
+  def put(self):
+    #edit teacher information
+    return ''
+  def delete(self):
+    #remove teacher information
+    return ''
+
+class HOD(Resource):
+  def get(self):
+    #retrieve all the HOD's of the college
+    return ''
+  def post(self):
+    #add new HOD to the department
+    return ''
+  def put(self):
+    #edit HOD information
+    return ''
+  def delete(self):
+    #remove HOD information
+    #req specification: not sure
+    return ''
+
+class Students(Resource):
+  #TODO: Admin access
+  def get(self):
+    # retrieve all the students of [the current logged in user's dept]
+    return ''
+  def post(self):
+    # add new teacher to the department
+    return ''
+  def put(self):
+    # edit teacher information
+    return ''
+  def delete(self):
+    # remove teacher information
+    return ''
+
+class StudentsAttendance(Resource):
+  def post(self):
+    #return attendance of all the students of ['dept'] ['sem'] ['sec']
+    return ''
+
+class StudentsAttendanceEdit(Resource):
+  def post(self):
+    #update attendance for ['student'] ['subject']
+    return ''
+
+class SubjectClasses(Resource):
+  def get(self):
+    #return all the subjects of all the sem and the number ofclasses
+    return ''
+  def put(self):
+    #update a subject's total number of classes by one
+    return ''
+
+class IAMarks(Resource):
+  def post(self):
+    #return iamarks of all the students of ['dept'] ['sem'] ['sec']
+    return ''
+
+class IAMarksEdit(Resource):
+  def post(self):
+    #allot marks for ['student'] ['subject']
+    return ''
+  def put(self):
+    #edit marks
+    return ''
+
+class Scheme(Resource):
+  def get(self):
+    #get a list of all the schemes
+    return ''
+  def post(self):
+    #add new scheme, all the col of the table
+    return ''
+  def put(self):
+    #edit the given scheme
+    return ''
+
+class Subject(Resource):
+  def get(self):
+    #get all the subjects of a given
+    return ''
+  def post(self):
+    #add subjects
+    return ''
+
+
 api.add_resource(UserRegistration, '/registration')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogoutAccess, '/logout/access')
