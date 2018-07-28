@@ -1,9 +1,9 @@
 from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, abort, Api, Resource#change to webargs instead of reqparse(deprecated)
 from flask_cors import CORS,cross_origin
 from flaskext.mysql import MySQL
 from passlib.hash import pbkdf2_sha256 as sha256
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, JWTManager)
+from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt,get_jwt_claims, JWTManager)
 import random, string
 
 def generate_hash(password):
@@ -61,7 +61,7 @@ parser = reqparse.RequestParser()
 #making sure that the username and password keys won't be null (required = True)
 parser.add_argument('username', help = 'This field cannot be blank', required = True)
 parser.add_argument('password', help = 'This field cannot be blank', required = True)
-
+parser.add_argument('t_name')
 QUERY1 = "INSERT INTO `signup_and_login_users_table`(`dept_id`, `fullname`, `username`, `password`, `user_levels`,`email`,`phone`) VALUES (1,'as','%s','%s',0,0,0)"
 QUERY2 = "SELECT * FROM `signup_and_login_users_table` where username = '%s'"
 
@@ -73,6 +73,22 @@ def add(jti):
   conn.commit()
   #db.session.add(self)
   #db.session.commit()
+
+
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+  QUERY = "select dept_id,user_levels from signup_and_login_users_table where username = '%s'"% identity
+  b = cursor.execute(QUERY)
+  conn.commit()
+  for i in cursor:
+    dept_id = i[0]
+    user_level = i[1]
+    break
+  return {
+    'dept' : dept_id,
+    'user_level' : user_level
+  }
+
 
 def is_jti_blacklisted(jti):
   QUERY3 = "SELECT * FROM `revoked_tokens` WHERE jti = '%s'"%(jti)
@@ -91,6 +107,7 @@ class UserRegistration(Resource):
       conn.commit()
       access_token = create_access_token(identity=data['username'])
       refresh_token = create_refresh_token(identity=data['username'])
+      add_claims_to_access_token(username)
       return {
         (QUERY1) % (username, password): 'User {} was created'.format(data['username']),
         'access_token': access_token,
@@ -165,19 +182,40 @@ class AllUsers(Resource):
 class SecretResource(Resource):
   @jwt_required
   def get(self):
+    claims = get_jwt_claims()
     return {
       'answer': get_jwt_identity(),
-      1: get_raw_jwt()['jti']
+      1: get_raw_jwt()['jti'],
+      2 : claims['dept'],
+      3 : claims['user_level']
+
     }
 
 class CollegeDepartments(Resource):
   def get(self):
     #retrieve all the department names
-    return ''
+    QUERY = "SELECT d.dept_abbr, d.dept_name, sign.fullname FROM dept_info d, signup_and_login_users_table sign where d.dept_hod = sign.id"
+    dept = cursor.execute(QUERY)
+    res = {}
+    for k,i in enumerate(cursor):
+      res[k] = i
+    return res
   def post(self):
     #TODO: give super admin access
     #able to add new department
-    return ''
+    data = parser.parse_args()
+    abbr, name= data['abbr'], data['name']
+    QUERY = "INSERT INTO `dept_info`(`dept_abbr`, `dept_name`)VALUES('%s','%s')"%(abbr,name)
+    res = {}
+    try:
+      cursor.execute(QUERY)
+      conn.commit()
+      for k, i in enumerate(cursor):
+        res[k] = i
+      return res
+    except:
+      res['err']='error'
+      return res
   def put(self):
     #TODO: give super admin access
     #edit the department details
@@ -191,9 +229,27 @@ class Teacher(Resource):
   def get(self):
     #retrieve all the teachers of [the current logged in user's dept]
     return ''
+  @jwt_required
   def post(self):
     #add new teacher to the department
-    return ''
+    data = parser.parse_args()
+    teacher_name = data['t_name']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    temp_password = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+    username = ''.join(random.choice(string.ascii_uppercase) for _ in range(8))
+    cnt = 0
+    res = {}
+    try:
+      if cnt != 4:
+        QUERY = "INSERT INTO `ftlogin`(`dept_id`, `userlevel`, `name`, `username`, `pswd`) VALUES (%s,0,'%s','%s','%s')" % (dept_id,teacher_name,username,temp_password)
+        cnt += 1
+        cursor.execute(QUERY)
+        conn.commit()
+        res['msg'] = 'OK'
+    except:
+      res['msg'] = 'err'
+    return res
   def put(self):
     #edit teacher information
     return ''
@@ -221,24 +277,47 @@ class Students(Resource):
   def get(self):
     # retrieve all the students of [the current logged in user's dept]
     return ''
+  @jwt_required
   def post(self):
-    # add new teacher to the department
-    return ''
+    # add new student to the department
+    parser.add_argument('student', help = 'This field cannot be blank', required = True)
+    parser.add_argument('usn', help = 'This field cannot be blank', required = True)
+    data = parser.parse_args()
+    student_name, usn = data['student'], data['usn']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    res = {}
+    try:
+      #TODO: change the sem_id part later, separate class and the student tables
+      QUERY = "INSERT INTO `students`(`dept_id`, `sem_id`, `usn`, `name`) VALUES (%s,1,'%s','%s')" % (dept_id,usn,student_name)
+      cursor.execute(QUERY)
+      conn.commit()
+      res['msg'] = 'OK'
+    except:
+      res['msg'] = 'err'
+    return res
+
   def put(self):
-    # edit teacher information
+    # edit student information
     return ''
   def delete(self):
-    # remove teacher information
+    # remove student information
     return ''
 
 class StudentsAttendance(Resource):
-  def post(self):
+  def get(self):
     #return attendance of all the students of ['dept'] ['sem'] ['sec']
+    parser.add_argument('sem',required = True)
+    parser.add_argument('sec', required = True)
+    data = parser.parse_args()
+    sem, sec = data['sem'], data['sec']
+    #attendance query goes in here
     return ''
 
 class StudentsAttendanceEdit(Resource):
   def post(self):
     #update attendance for ['student'] ['subject']
+
     return ''
 
 class SubjectClasses(Resource):
@@ -290,6 +369,8 @@ api.add_resource(TokenRefresh, '/token/refresh')
 api.add_resource(AllUsers, '/users')
 api.add_resource(SecretResource, '/secret')
 api.add_resource(AccessToken,'/access')
-
+api.add_resource(CollegeDepartments,'/departments')
+api.add_resource(Teacher,'/teacher')
+api.add_resource(Students,'/students')
 if __name__ == '__main__':
     app.run(debug=True)
