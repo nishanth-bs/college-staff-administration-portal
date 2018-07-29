@@ -60,8 +60,6 @@ cursor =conn.cursor()
 
 parser = reqparse.RequestParser()
 #making sure that the username and password keys won't be null (required = True)
-parser.add_argument('username', help = 'This field cannot be blank', required = True)
-parser.add_argument('password', help = 'This field cannot be blank', required = True)
 parser.add_argument('t_name')
 QUERY1 = "INSERT INTO `signup_and_login_users_table`(`dept_id`, `fullname`, `username`, `password`, `user_levels`,`email`,`phone`) VALUES (1,'as','%s','%s',0,0,0)"
 QUERY2 = "SELECT * FROM `signup_and_login_users_table` where username = '%s'"
@@ -101,8 +99,8 @@ def is_jti_blacklisted(jti):
     return True
 class UserRegistration(Resource):
   def post(self):
-    parser.add_argument('username', help='This field cannot be blank', required=True)
-    parser.add_argument('password', help='This field cannot be blank', required=True)
+    parser.add_argument('username', help = 'This field cannot be blank', required = True)
+    parser.add_argument('password', help = 'This field cannot be blank', required = True)
     data = parser.parse_args()
     username, password = data['username'], generate_hash(data['password'])
     try:
@@ -310,20 +308,55 @@ class Students(Resource):
     return ''
 
 class StudentsAttendance(Resource):
+  @jwt_required
   def get(self):
     #return attendance of all the students of ['dept'] ['sem'] ['sec']
     parser.add_argument('sem',required = True)
     parser.add_argument('sec', required = True)
     data = parser.parse_args()
     sem, sec = data['sem'], data['sec']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    res={}
+    try:
+      #TODO:
+      QUERYp1 = "SELECT stud.name,sub.sub_name, ia.*, held.total_classes,a.no_of_absent FROM iamarks ia, subjects sub, deptsemsec d, students stud, attendances a, total_classes_held held WHERE ia.sid = stud.sid AND ia.sub_id = sub.sub_id AND held.sub_id = a.sub_id AND a.sid = stud.sid AND d.dept_id = %s AND d.sem= %s AND d.sec= '%s' AND stud.sem_id=d.sem_id"%(dept_id,sem,sec)
+      cursor.execute(QUERYp1)
+      conn.commit()
+      for k, i in enumerate(cursor):
+        res[k] = i
+    except:
+      res['msg'] = 'err'
     #attendance query goes in here
-    return ''
+    return res
 
 class StudentsAttendanceEdit(Resource):
+  @jwt_required
   def post(self):
     #update attendance for ['student'] ['subject']
+    parser.add_argument('sem', required=True)
+    parser.add_argument('sec', required=True)
+    parser.add_argument('sub', required=True)
+    parser.add_argument('usn', required=True)
+    data = parser.parse_args()
+    sem, sec ,sub , usn = data['sem'], data['sec'],data['sub'],data['usn']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    res = {}
+    try:
+      # TODO:
+      QUERYp2 = "SELECT stud.usn,stud.name FROM students stud, deptsemsec dept WHERE stud.sem_id=dept.sem_id AND dept.sem= %s AND dept.sec= '%s'"%(sem,sec)
+      QUERYp3="UPDATE `total_classes_held` SET `total_classes`=total_classes+1 WHERE sub_id IN (SELECT subjects.sub_id FROM subjects WHERE subjects.sub_abbr='%s')"%(sub)
+      QUERYp4="update attendances a set a.no_of_absent=a.no_of_absent+1 where a.sid IN(SELECT s.sid FROM students s WHERE s.usn='%s') and a.sub_id IN(SELECT s.sub_id FROM subjects s WHERE s.sub_abbr='%s' )"%(usn,sub)
 
-    return ''
+      cursor.execute(QUERYp2)
+      cursor.execute(QUERYp3)
+      cursor.execute(QUERYp4)
+      conn.commit()
+    except:
+      res['msg'] = 'err'
+    # attendance query goes in here
+    return res
 
 class SubjectClasses(Resource):
   def get(self):
@@ -334,14 +367,73 @@ class SubjectClasses(Resource):
     return ''
 
 class IAMarks(Resource):
+  @jwt_required
   def post(self):
-    #return iamarks of all the students of ['dept'] ['sem'] ['sec']
-    return ''
-
+     # return iamarks of all the students of ['dept'] ['sem'] ['sec']
+    parser.add_argument('sem', required=True)
+    parser.add_argument('sec', required=True)
+    parser.add_argument('sub', required=True)
+    #parser.add_argument('usn', required=True)
+    data = parser.parse_args()
+    sem, sec , sub = data['sem'], data['sec'], data['sub'] #, data['usn']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    tempia= "SELECT sub_id FROM `subjects` WHERE sub_abbr='%s'"%(sub)
+    cursor.execute(tempia)
+    conn.commit()
+    res1={}
+    for k,i in enumerate(cursor):
+      res1[k]=i
+    sub_id=res1[0][0]
+    #print(sub_id)
+    res = {}
+    try:
+      # TODO:
+      QUERYp8 = "SELECT s.usn,s.name,sub.sub_name,sub.sub_abbr,ia.* FROM iamarks ia, students s, subjects sub,deptsemsec d WHERE ia.sid = s.sid AND ia.sub_id = sub.sub_id AND s.sem_id=d.sem_id AND d.sem=%s AND d.sec='%s' AND ia.sub_id=%s AND d.dept_id=%s"%(sem,sec,sub_id,dept_id)
+      #print(QUERYp8)
+      cursor.execute(QUERYp8)
+      #cursor.execute(QUERYp9)
+      conn.commit()
+      for k, i in enumerate(cursor):
+        res[k] = i
+    except:
+      res['msg'] = 'err'
+    return res
+  
 class IAMarksEdit(Resource):
+  @jwt_required
   def post(self):
-    #allot marks for ['student'] ['subject']
-    return ''
+    parser.add_argument('sem', required=True)
+    parser.add_argument('sec', required=True)
+    parser.add_argument('sub', required=True)
+    parser.add_argument('usn', required=True)
+    parser.add_argument('inter', required=True)
+    parser.add_argument('quiz', required=True)
+    parser.add_argument('assign', required=True)
+    parser.add_argument('intnum', required=True)
+
+    data = parser.parse_args()
+    sem, sec, sub, usn, inter ,quiz ,assign ,intnum  = data['sem'], data['sec'], data['sub'], data['usn'], data['inter'] ,data['quiz'], data['assign'],data['intnum']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    res = {}
+    #QUERYp5 = "SELECT sub.sub_abbr as subject,sub.sub_name, stud.usn,stud.name FROM signup_and_login_users_table ss, students stud, deptsemsec d, teachers_classes tc, subjects sub WHERE tc.tid = ss.id AND tc.sem_id = d.sem_id AND tc.subabbr = sub.sub_id AND stud.sem_id=d.sem_id AND ss.username ='%s' AND d.sem= %s AND d.sec='%s'" % (
+    #tname, sem, sec)
+    QUERYp6 = "UPDATE `iamarks` SET internals%s='%s',quiz%s='%s',assignment%s='%s' WHERE sub_id IN(SELECT ss.sub_id FROM subjects ss WHERE ss.sub_abbr='%s') AND sid IN (SELECT s.sid FROM students s WHERE s.usn ='%s')" % (
+    intnum, inter , intnum , quiz, intnum ,assign , sub, usn)
+    try:
+      # TODO:
+
+      #print(QUERYp5)
+      #print(QUERYp6)
+      #cursor.execute(QUERYp5)
+      cursor.execute(QUERYp6)
+      conn.commit()
+    except:
+      res['msg'] = 'err'
+    # attendance query goes in here
+    return res
+
   def put(self):
     #edit marks
     return ''
@@ -377,5 +469,9 @@ api.add_resource(AccessToken,'/access')
 api.add_resource(CollegeDepartments,'/departments')
 api.add_resource(Teacher,'/teacher')
 api.add_resource(Students,'/students')
+api.add_resource(StudentsAttendance,'/studentsattendance')
+api.add_resource(StudentsAttendanceEdit,'/studentsattendanceedit')
+api.add_resource(IAMarks,'/iamarks')
+api.add_resource(IAMarksEdit,'/iamarksedit')
 if __name__ == '__main__':
     app.run(debug=True)
