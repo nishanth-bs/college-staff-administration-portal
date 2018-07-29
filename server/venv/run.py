@@ -6,6 +6,7 @@ from passlib.hash import pbkdf2_sha256 as sha256
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt,get_jwt_claims, JWTManager)
 import random, string
 
+
 def generate_hash(password):
   return sha256.hash(password)
 
@@ -32,8 +33,8 @@ class AccessToken(Resource):
 
 #import resources
 app = Flask(__name__)
-api = Api(app)
 cors = CORS(app)
+api = Api(app)
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = ''
 app.config['MYSQL_DATABASE_PASSWORD'] = None
@@ -100,6 +101,8 @@ def is_jti_blacklisted(jti):
     return True
 class UserRegistration(Resource):
   def post(self):
+    parser.add_argument('username', help='This field cannot be blank', required=True)
+    parser.add_argument('password', help='This field cannot be blank', required=True)
     data = parser.parse_args()
     username, password = data['username'], generate_hash(data['password'])
     try:
@@ -118,6 +121,8 @@ class UserRegistration(Resource):
 
 class UserLogin(Resource):
   def post(self):
+    parser.add_argument('username', help='This field cannot be blank', required=True)
+    parser.add_argument('password', help='This field cannot be blank', required=True)
     data = parser.parse_args()
     username, password = data['username'], data['password']
     current_user = cursor.execute(QUERY2 % (username))
