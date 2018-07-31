@@ -1,16 +1,18 @@
-import { Injectable } from '@angular/core';
+import { Injectable} from '@angular/core';
 import { HttpClient, HttpErrorResponse} from '@angular/common/http';
 import { SemSection, UsnName } from '../interfaces';
 import { throwError } from '../../../node_modules/rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { CATCH_ERROR_VAR } from '../../../node_modules/@angular/compiler/src/output/output_ast';
+
 @Injectable({
   providedIn: 'root'
 })
+
 export class StudentService {
 
   semsec :String;
-  private _loginUrl = "http://127.0.0.1/api/v1.0/login";  
+  private _loginUrl = "http://127.0.0.1:5000/login";  
   constructor(private _httpClient: HttpClient) { }
 
   private handleError(error: HttpErrorResponse){
@@ -30,7 +32,19 @@ export class StudentService {
   loginUser(user){
     return this._httpClient.post<any>(this._loginUrl,user)
   }
-  
+
+  //if the token exists in browser this returns true
+  loggedIn(){
+    return !!localStorage.getItem('access_token')
+  }
+  getToken(){
+    return localStorage.getItem('access_token')
+  }
+
+  loggingout(){
+    return this._httpClient.post<any>('http://127.0.0.1:5000/logout/access',0);
+  }
+
   /*get the list of available semesters and sections */
   /* TODO: get this for the currently logged in users dept */
   getClasses(){
