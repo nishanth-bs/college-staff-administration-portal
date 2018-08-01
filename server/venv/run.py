@@ -506,7 +506,26 @@ class Subject(Resource):
       res['msg'] = 'err'
     return res
 
-
+class Announcement(Resource):
+  @jwt_required
+  def post(self):
+    parser.add_argument('broadcast')
+    data = parser.parse_args()
+    announcement_msg = data['broadcast']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    res = {}
+    try:
+      QUERY = "INSERT INTO `announcement`( `announcment`, `datetime`) VALUES ('%s',now())" % announcement_msg
+      cursor.execute(QUERY)
+      aid = cursor.lastrowid
+      QUERYY = "INSERT INTO `announcement_access`(`a_id`, `dept_id`) VALUES (%s,%s)" % (aid,dept_id)
+      cursor.execute(QUERYY)
+      conn.commit()
+      res['msg'] = 'ok'
+    except:
+      res['msg'] = 'err'
+    return res
 api.add_resource(UserRegistration, '/registration')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogoutAccess, '/logout/access')
@@ -524,5 +543,6 @@ api.add_resource(IAMarks,'/iamarks')
 api.add_resource(IAMarksEdit,'/iamarksedit')
 api.add_resource(Scheme,'/scheme')
 api.add_resource(Subject,'/subject')
+api.add_resource(Announcement,'/announcement')
 if __name__ == '__main__':
     app.run(debug=True)
