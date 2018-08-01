@@ -5,8 +5,11 @@ from flaskext.mysql import MySQL
 from passlib.hash import pbkdf2_sha256 as sha256
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt,get_jwt_claims, JWTManager)
 import random, string
-
-
+import pandas as pd
+app = Flask(__name__)
+cors = CORS(app)
+api = Api(app)
+mysql = MySQL()
 def generate_hash(password):
   return sha256.hash(password)
 
@@ -32,10 +35,7 @@ class AccessToken(Resource):
 
 
 #import resources
-app = Flask(__name__)
-cors = CORS(app)
-api = Api(app)
-mysql = MySQL()
+
 app.config['MYSQL_DATABASE_USER'] = ''
 app.config['MYSQL_DATABASE_PASSWORD'] = None
 app.config['MYSQL_DATABASE_DB'] = 'collegee'
@@ -61,7 +61,7 @@ cursor =conn.cursor()
 parser = reqparse.RequestParser()
 #making sure that the username and password keys won't be null (required = True)
 parser.add_argument('t_name')
-QUERY1 = "INSERT INTO `signup_and_login_users_table`(`dept_id`, `fullname`, `username`, `password`, `user_levels`,`email`,`phone`) VALUES (1,'as','%s','%s',0,0,0)"
+QUERY1 = "INSERT INTO `signup_and_login_users_table`(`dept_id`, `fullname`, `username`, `password`, `user_levels`) VALUES (1,'as','%s','%s',0)"
 QUERY2 = "SELECT * FROM `signup_and_login_users_table` where username = '%s'"
 
 @jwt_required
@@ -110,7 +110,7 @@ class UserRegistration(Resource):
       refresh_token = create_refresh_token(identity=data['username'])
       add_claims_to_access_token(username)
       return {
-        (QUERY1) % (username, password): 'User {} was created'.format(data['username']),
+        #(QUERY1) % (username, password): 'User {} was created'.format(data['username']),
         'access_token': access_token,
         'refresh_token': refresh_token
       }
@@ -134,7 +134,7 @@ class UserLogin(Resource):
       access_token = create_access_token(identity=data['username'])
       refresh_token = create_refresh_token(identity=data['username'])
       return {
-        'message': 'Logged in as {}'.format(result_set[3]),#current_user.username),
+        #'message': 'Logged in as {}'.format(result_set[3]),#current_user.username),
         'access_token': access_token,
         'refresh_token': refresh_token
       }
@@ -197,12 +197,14 @@ class SecretResource(Resource):
 class CollegeDepartments(Resource):
   def get(self):
     #retrieve all the department names
-    QUERY = "SELECT d.dept_abbr, d.dept_name, sign.fullname FROM dept_info d, signup_and_login_users_table sign where d.dept_hod = sign.id"
-    dept = cursor.execute(QUERY)
-    res = {}
+    QUERY = "SELECT d.dept_abbr, d.dept_name FROM dept_info d"
+    #dept = cursor.execute(QUERY)
+    df = pd.read_sql(QUERY,con=conn)
+    return df.to_json(orient='records',lines=True)
+    """res = {}
     for k,i in enumerate(cursor):
       res[k] = i
-    return res
+    return res"""
   def post(self):
     #TODO: give super admin access
     #able to add new department
@@ -231,6 +233,9 @@ class CollegeDepartments(Resource):
 class Teacher(Resource):
   def get(self):
     #retrieve all the teachers of [the current logged in user's dept]
+    parser.add_argument('dept')
+    QUERY = "SELECT fullname,username FROM `signup_and_login_users_table` where dept_id = 2 and user_levels = 0"
+    #"SELECT fullname,username FROM signup_and_login_users_table s,dept_info d  where user_levels = 0 and d.dept_name = "InformationScience" and d.dept_name = "sdf" and dept_info = signup_and_login_users_table.dept_id"
     return ''
   @jwt_required
   def post(self):
@@ -399,7 +404,7 @@ class IAMarks(Resource):
     except:
       res['msg'] = 'err'
     return res
-  
+
 class IAMarksEdit(Resource):
   @jwt_required
   def post(self):
@@ -441,10 +446,32 @@ class IAMarksEdit(Resource):
 class Scheme(Resource):
   def get(self):
     #get a list of all the schemes
-    return ''
+    QUERY = "SELECT sc.scheme_id,d.dept_name,sc.scheme_year, sc.scheme_name FROM schemes sc, dept_info d where d.dept_id = sc.dept_id"
+    df = pd.read_sql(QUERY, con=conn)
+    return df.to_json(orient='records', lines=True)
+  @jwt_required
   def post(self):
     #add new scheme, all the col of the table
-    return ''
+    parser.add_argument('schemeyear')
+    parser.add_argument('schemename')
+    parser.add_argument('schemepattern')
+    parser.add_argument('schemeiasplitup')
+    data = parser.parse_args()
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    schemeyear, schemename, schemepattern, schemeiasplitup = data['schemeyear'], data['schemename'], \
+                                                             data['schemepattern'], data['schemeiasplitup']
+    res = {}
+    try:
+      id = ''.join(random.choice(string.ascii_uppercase) for _ in range(10))
+      QUERY = "INSERT INTO `schemes`(`scheme_id`, `dept_id`, `scheme_year`, `scheme_name`, `scheme_pattern`, `scheme_ia_splitup`)" \
+              " VALUES ('%s',%s,%s,'%s','%s','%s')" % (id,dept_id,schemeyear,schemename,schemepattern,schemeiasplitup)
+      cursor.execute(QUERY)
+      conn.commit()
+      res['msg'] = 'ok'
+    except:
+      res['msg'] = 'err'
+    return res
   def put(self):
     #edit the given scheme
     return ''
@@ -452,6 +479,7 @@ class Scheme(Resource):
 class Subject(Resource):
   def get(self):
     #get all the subjects of a given
+    
     return ''
   def post(self):
     #add subjects
@@ -473,5 +501,6 @@ api.add_resource(StudentsAttendance,'/studentsattendance')
 api.add_resource(StudentsAttendanceEdit,'/studentsattendanceedit')
 api.add_resource(IAMarks,'/iamarks')
 api.add_resource(IAMarksEdit,'/iamarksedit')
+api.add_resource(Scheme,'/scheme')
 if __name__ == '__main__':
     app.run(debug=True)
