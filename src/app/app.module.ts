@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +9,9 @@ import { AppComponent } from './app.component';
 import { AuthGuard } from './shared';
 import { StudentService } from './services/student.service';
 import { TokenInterceptorService } from './services/tokeninterceptor.service'
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
+import { AngularMaterial } from './angular-material';
 // AoT requires an exported function for factories
 export const createTranslateLoader = (http: HttpClient) => {
     /* for development
@@ -26,7 +26,6 @@ export const createTranslateLoader = (http: HttpClient) => {
 @NgModule({
     imports: [
         CommonModule,
-        BrowserModule,
         FormsModule,
         HttpClientModule,
         TranslateModule.forRoot({
@@ -37,7 +36,8 @@ export const createTranslateLoader = (http: HttpClient) => {
             }
         }),
         AppRoutingModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        AngularMaterial
     ],
     declarations: [AppComponent],
     providers: [AuthGuard,StudentService,
