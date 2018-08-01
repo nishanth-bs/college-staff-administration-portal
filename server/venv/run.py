@@ -99,8 +99,8 @@ def is_jti_blacklisted(jti):
     return True
 class UserRegistration(Resource):
   def post(self):
-    parser.add_argument('username', help = 'This field cannot be blank', required = True)
-    parser.add_argument('password', help = 'This field cannot be blank', required = True)
+    parser.add_argument('username')
+    parser.add_argument('password')
     data = parser.parse_args()
     username, password = data['username'], generate_hash(data['password'])
     try:
@@ -234,7 +234,8 @@ class Teacher(Resource):
   def get(self):
     #retrieve all the teachers of [the current logged in user's dept]
     parser.add_argument('dept')
-    QUERY = "SELECT fullname,username FROM `signup_and_login_users_table` where dept_id = 2 and user_levels = 0"
+    data = parser.parse_args()
+    QUERY = "SELECT fullname,username FROM `signup_and_login_users_table` where dept_id = %d and user_levels = 0" % (data['dept'])
     #"SELECT fullname,username FROM signup_and_login_users_table s,dept_info d  where user_levels = 0 and d.dept_name = "InformationScience" and d.dept_name = "sdf" and dept_info = signup_and_login_users_table.dept_id"
     return ''
   @jwt_required
@@ -250,7 +251,8 @@ class Teacher(Resource):
     res = {}
     try:
       if cnt != 4:
-        QUERY = "INSERT INTO `ftlogin`(`dept_id`, `userlevel`, `name`, `username`, `pswd`) VALUES (%s,0,'%s','%s','%s')" % (dept_id,teacher_name,username,temp_password)
+        QUERY = "INSERT INTO `ftlogin`(`dept_id`, `userlevel`, `name`, `username`, `pswd`) VALUES (%s,0,'%s','%s','%s')"\
+                % (dept_id,teacher_name,username,temp_password)
         cnt += 1
         cursor.execute(QUERY)
         conn.commit()
@@ -479,11 +481,30 @@ class Scheme(Resource):
 class Subject(Resource):
   def get(self):
     #get all the subjects of a given
-    
+
     return ''
+  @jwt_required
   def post(self):
     #add subjects
-    return ''
+    parser.add_argument('subname')
+    parser.add_argument('subabbr')
+    parser.add_argument('scheme')
+    data = parser.parse_args()
+    subname, subabbr, scheme_id = data['subname'],data['subabbr'],data['scheme']
+    claims = get_jwt_claims()
+    dept_id = claims['dept']
+    res = {}
+    try:
+      QUERY = "INSERT INTO `subject`( `dept_id`, `sub_name`, `sub_abbr`) VALUES (%s,'%s','%s')" %(dept_id,subname,subabbr)
+      cursor.execute(QUERY)
+      sub_id = cursor.lastrowid
+      QUERYY = "INSERT INTO `scheme_subject_match`(`scheme_id`, `sub_id`) VALUES ('%s',%s)" %(scheme_id,sub_id) #scheme_id is a string
+      cursor.execute(QUERYY)
+      conn.commit()
+      res['msg'] = 'ok'
+    except:
+      res['msg'] = 'err'
+    return res
 
 
 api.add_resource(UserRegistration, '/registration')
@@ -502,5 +523,6 @@ api.add_resource(StudentsAttendanceEdit,'/studentsattendanceedit')
 api.add_resource(IAMarks,'/iamarks')
 api.add_resource(IAMarksEdit,'/iamarksedit')
 api.add_resource(Scheme,'/scheme')
+api.add_resource(Subject,'/subject')
 if __name__ == '__main__':
     app.run(debug=True)
