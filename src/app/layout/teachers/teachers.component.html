@@ -1,0 +1,11 @@
+<div [@routerTransition]>
+  <app-page-header [heading]="'Teachers'" [icon]="'fa-edit'"></app-page-header>
+  <form>
+      <mat-form-field>
+          <input matInput placeholder="Teacher's name">
+      </mat-form-field>&nbsp;
+      <button mat-stroked-button color="primary" type="submit" >Add Teacher</button>
+  </form>
+  
+  <app-table-teacher></app-table-teacher>
+</div>
