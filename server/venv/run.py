@@ -551,6 +551,11 @@ class Announcement(Resource):
     df = pd.read_sql(QUERY, con=conn)
     return df.to_json(orient='records', lines=True)
 
+class TeacherClassMatch(Resource):
+  def post(self):
+    #parser.add_argument("sub_id")
+    pass
+
 api.add_resource(UserRegistration, '/registration')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogoutAccess, '/logout/access')
