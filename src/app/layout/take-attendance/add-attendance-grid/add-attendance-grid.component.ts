@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { parse } from 'url';
 import { StudentService } from '../../../services/student.service';
-import { UsnName } from '../../../interfaces';
+import { UsnName } from '../../../interfacess';
  
 @Component({
   selector: 'app-add-attendance-grid',
@@ -26,4 +26,44 @@ export class AddAttendanceGridComponent implements OnInit {
     })
   }
 
+
+  /* updated code */
+  toggleAtt(obj){
+    if(obj.att == 1){
+      return 'green';
+    }else{
+      return 'red';
+    }
+    //console.log(this.color);
+  }
+  toggleAttendance(obj){
+    if(obj.att == 1){
+      obj.att =0;
+    }
+    else{
+      obj.att = 1;
+    }
+  }
+
+  
+  color:stud[]=[
+    { usn : '1RN15IS055', name:'Nishanth', att:1 },
+    { usn : '1RN15IS055', name:'Nishanth', att:1 },
+    { usn : '1RN15IS055', name:'Nishanth', att:1 },
+    { usn : '1RN15IS055', name:'Nishanth', att:1 },
+    { usn: '1RN15IS061', name:'Pran', att:1},
+    { usn: '1RN15IS061', name:'Pran', att:1},
+    { usn: '1RN15IS061', name:'Pran', att:1},
+    { usn: '1RN15IS061', name:'Pran', att:1}
+ ]
 }
+export interface stud{
+  usn: string,
+  name: string,
+  att: number
+}
+
+
+
+
+

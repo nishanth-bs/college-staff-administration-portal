@@ -6,3 +6,10 @@
 <li *ngFor = "let i of _studentsList">
   {{i.usn}}{{i.name}}
 </li>
+<mat-grid-list cols="5" rowHeight="2:1"  >
+    <mat-grid-tile *ngFor = "let i of color" (click) = "toggleAttendance(i)" [style.background]= "i.att == 1? '#19b33c':'#e85261'">
+      {{i.usn}}
+    </mat-grid-tile>
+    
+  </mat-grid-list>
+  
