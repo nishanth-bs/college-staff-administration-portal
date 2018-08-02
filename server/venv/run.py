@@ -10,6 +10,13 @@ app = Flask(__name__)
 cors = CORS(app)
 api = Api(app)
 mysql = MySQL()
+
+errors = {
+    'ServerError':{
+        'message':'A user with that username already exists',
+        'status':401
+      }
+  }
 def generate_hash(password):
   return sha256.hash(password)
 
@@ -231,13 +238,17 @@ class CollegeDepartments(Resource):
     return ''
 
 class Teacher(Resource):
+  @jwt_required
   def get(self):
     #retrieve all the teachers of [the current logged in user's dept]
-    parser.add_argument('dept')
-    data = parser.parse_args()
+    #parser.add_argument('dept')
+    #data = parser.parse_args()
+    data= get_jwt_claims()
     QUERY = "SELECT fullname,username FROM `signup_and_login_users_table` where dept_id = %d and user_levels = 0" % (data['dept'])
     #"SELECT fullname,username FROM signup_and_login_users_table s,dept_info d  where user_levels = 0 and d.dept_name = "InformationScience" and d.dept_name = "sdf" and dept_info = signup_and_login_users_table.dept_id"
-    return ''
+    df = pd.read_sql(QUERY, con=conn)
+    return df.to_json(orient='records', lines=True)
+
   @jwt_required
   def post(self):
     #add new teacher to the department
@@ -283,10 +294,14 @@ class HOD(Resource):
     return ''
 
 class Students(Resource):
-  #TODO: Admin access
+  #TODO: Admin access OK
+  @jwt_required
   def get(self):
     # retrieve all the students of [the current logged in user's dept]
-    return ''
+    dept_id = get_jwt_claims()['dept']
+    QUERY = "SELECT sid,usn,name FROM `students` WHERE dept_id = %s" % (dept_id)
+    df = pd.read_sql(QUERY, con=conn)
+    return df.to_json(orient='records', lines=True)
   @jwt_required
   def post(self):
     # add new student to the department
@@ -481,8 +496,10 @@ class Scheme(Resource):
 class Subject(Resource):
   def get(self):
     #get all the subjects of a given
-
-    return ''
+    QUERY = "SELECT s.scheme_id,sch.scheme_name,sub.sub_name,sub.sub_abbr FROM scheme_subject_match s, subject sub," \
+            " schemes sch WHERE s.sub_id = sub.sub_id and sch.scheme_id = s.scheme_id"
+    df = pd.read_sql(QUERY, con=conn)
+    return df.to_json(orient='records', lines=True)
   @jwt_required
   def post(self):
     #add subjects
@@ -510,13 +527,15 @@ class Announcement(Resource):
   @jwt_required
   def post(self):
     parser.add_argument('broadcast')
+    parser.add_argument('broadcast_title')
     data = parser.parse_args()
     announcement_msg = data['broadcast']
+    announcement_title = data['broadcast_title']
     claims = get_jwt_claims()
     dept_id = claims['dept']
     res = {}
     try:
-      QUERY = "INSERT INTO `announcement`( `announcment`, `datetime`) VALUES ('%s',now())" % announcement_msg
+      QUERY = "INSERT INTO `announcement`( a_title,`announcment`, `datetime`) VALUES ('%s','%s',now())" % (announcement_title,announcement_msg)
       cursor.execute(QUERY)
       aid = cursor.lastrowid
       QUERYY = "INSERT INTO `announcement_access`(`a_id`, `dept_id`) VALUES (%s,%s)" % (aid,dept_id)
@@ -526,6 +545,12 @@ class Announcement(Resource):
     except:
       res['msg'] = 'err'
     return res
+  @jwt_required
+  def get(self):
+    QUERY = "SELECT  `a_title`, `announcment`, `datetime` FROM `announcement`"
+    df = pd.read_sql(QUERY, con=conn)
+    return df.to_json(orient='records', lines=True)
+
 api.add_resource(UserRegistration, '/registration')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogoutAccess, '/logout/access')
@@ -535,14 +560,14 @@ api.add_resource(AllUsers, '/users')
 api.add_resource(SecretResource, '/secret')
 api.add_resource(AccessToken,'/access')
 api.add_resource(CollegeDepartments,'/departments')
-api.add_resource(Teacher,'/teacher')
-api.add_resource(Students,'/students')
+api.add_resource(Teacher,'/api/v1.0/protected/teacher')
+api.add_resource(Students,'/api/v1.0/protected/students')
 api.add_resource(StudentsAttendance,'/studentsattendance')
 api.add_resource(StudentsAttendanceEdit,'/studentsattendanceedit')
 api.add_resource(IAMarks,'/iamarks')
 api.add_resource(IAMarksEdit,'/iamarksedit')
-api.add_resource(Scheme,'/scheme')
-api.add_resource(Subject,'/subject')
-api.add_resource(Announcement,'/announcement')
+api.add_resource(Scheme,'/api/v1.0/protected/scheme')
+api.add_resource(Subject,'/api/v1.0/protected/subject')
+api.add_resource(Announcement,'/api/v1.0/protected/announcement')
 if __name__ == '__main__':
     app.run(debug=True)
