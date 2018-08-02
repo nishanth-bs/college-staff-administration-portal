@@ -1,27 +1,109 @@
-# Projtrial
+# College Staff Administration Portal
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.0.8.
+Frontend - Angular version 6.0.8
 
-## Development server
+Controller - Python Flask RESTful library
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Backend - MySQL
 
-## Code scaffolding
+## API's
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Build
+`1. Departments`
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+    http://localhost:5000/api/v1.0/protected/dept
+    
+    methods: GET, POST, PUT
 
-## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+`2. HOD`
 
-## Running end-to-end tests
+    http://localhost:5000/api/v1.0/protected/hod
+    
+    methods: GET, POST, PUT
+  
+  
+`3. Teachers`
+    
+    http://localhost:5000/api/v1.0/protected/teacher
+    
+    methods: GET, POST, PUT
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
 
-## Further help
+`4. New registration`
+    
+    http://localhost:5000/api/v1.0/protected/ftusers
+    
+    methods: GET, POST, DELETE
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+
+`5. Students`
+    
+    http://localhost:5000/api/v1.0/protected/students
+
+    methods: GET, POST, PUT, DELETE
+
+
+`6. Scheme`
+
+    http://localhost:5000/api/v1.0/protected/schemes
+    
+    methods: GET, POST, PUT
+
+
+`7. Subject`
+
+    http://localhost:5000/api/v1.0/protected/subjects
+    
+    methods: GET, POST, PUT
+
+
+`8. Classes`
+
+    http://localhost:5000/api/v1.0/protected/classes
+    
+    methods: GET, POST, PUT
+
+
+`9. Teacher Classes Match`
+
+    http://localhost:5000/api/v1.0/protected/tc
+    
+    methods: GET, POST, PUT, DELETE
+
+
+`10. IA Marks`
+
+    http://localhost:5000/api/v1.0/protected/ia
+    
+    methods: GET, POST, PUT
+
+
+`11. Attendance`
+
+    http://localhost:5000/api/v1.0/protected/attendance
+    
+    methods: GET, POST, PUT
+
+
+`12. Announcements`
+
+    http://localhost:5000/api/v1.0/protected/announcements
+    
+    methods: GET, POST, PUT, DELETE
+
+
+`13. Question Papers`
+
+    http://localhost:5000/api/v1.0/protected/qp
+    
+    methods: GET, POST, PUT, DELETE
+
+
+`14. Message`
+
+    http://localhost:5000/api/v1.0/protected/message
+    
+    methods: GET, POST, PUT
+
+ 
