@@ -6,6 +6,8 @@ from passlib.hash import pbkdf2_sha256 as sha256
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt,get_jwt_claims, JWTManager)
 import random, string
 import pandas as pd
+import json
+
 app = Flask(__name__)
 cors = CORS(app)
 api = Api(app)
@@ -207,7 +209,7 @@ class CollegeDepartments(Resource):
     QUERY = "SELECT d.dept_abbr, d.dept_name FROM dept_info d"
     #dept = cursor.execute(QUERY)
     df = pd.read_sql(QUERY,con=conn)
-    return df.to_json(orient='records',lines=True)
+    return df.to_dict(orient='records',lines=True)
     """res = {}
     for k,i in enumerate(cursor):
       res[k] = i
@@ -247,7 +249,14 @@ class Teacher(Resource):
     QUERY = "SELECT fullname,username FROM `signup_and_login_users_table` where dept_id = %d and user_levels = 0" % (data['dept'])
     #"SELECT fullname,username FROM signup_and_login_users_table s,dept_info d  where user_levels = 0 and d.dept_name = "InformationScience" and d.dept_name = "sdf" and dept_info = signup_and_login_users_table.dept_id"
     df = pd.read_sql(QUERY, con=conn)
-    return df.to_json(orient='records', lines=True)
+    #return [{'username':'nish','fullname':'nishanth'},{'username':'s','fullname':'asd'}]
+    #cursor.execute(QUERY)
+    #res = {}
+    #for k,i in enumerate(cursor):
+    #  res[k] = i
+    df_as_json = df.to_dict(orient='records')
+    return df_as_json#df.to_dict(orient='records')[1:-1].replace('},{','}{')
+
 
   @jwt_required
   def post(self):
@@ -301,7 +310,7 @@ class Students(Resource):
     dept_id = get_jwt_claims()['dept']
     QUERY = "SELECT sid,usn,name FROM `students` WHERE dept_id = %s" % (dept_id)
     df = pd.read_sql(QUERY, con=conn)
-    return df.to_json(orient='records', lines=True)
+    return df.to_dict(orient='records', lines=True)
   @jwt_required
   def post(self):
     # add new student to the department
@@ -465,7 +474,7 @@ class Scheme(Resource):
     #get a list of all the schemes
     QUERY = "SELECT sc.scheme_id,d.dept_name,sc.scheme_year, sc.scheme_name FROM schemes sc, dept_info d where d.dept_id = sc.dept_id"
     df = pd.read_sql(QUERY, con=conn)
-    return df.to_json(orient='records', lines=True)
+    return df.to_dict(orient='records', lines=True)
   @jwt_required
   def post(self):
     #add new scheme, all the col of the table
@@ -499,7 +508,7 @@ class Subject(Resource):
     QUERY = "SELECT s.scheme_id,sch.scheme_name,sub.sub_name,sub.sub_abbr FROM scheme_subject_match s, subject sub," \
             " schemes sch WHERE s.sub_id = sub.sub_id and sch.scheme_id = s.scheme_id"
     df = pd.read_sql(QUERY, con=conn)
-    return df.to_json(orient='records', lines=True)
+    return df.to_dict(orient='records', lines=True)
   @jwt_required
   def post(self):
     #add subjects
@@ -549,7 +558,7 @@ class Announcement(Resource):
   def get(self):
     QUERY = "SELECT  `a_title`, `announcment`, `datetime` FROM `announcement`"
     df = pd.read_sql(QUERY, con=conn)
-    return df.to_json(orient='records', lines=True)
+    return df.to_dict(orient='records', lines=True)
 
 class TeacherClassMatch(Resource):
   def post(self):
