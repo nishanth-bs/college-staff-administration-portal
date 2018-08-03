@@ -1,0 +1,72 @@
+<div>
+
+<button mat-raised-button
+        class="add-scheme"
+        >
+    <i class="fa fa-plus"></i>
+</button>
+</div>
+<!--
+<mat-tab-group [selectedIndex]="selected.value"
+                (selectedIndexChange)="selected.setValue($event)">
+<mat-tab *ngFor="let tab of tabs; let index = index" [label]="tab">
+     
+
+    <button mat-raised-button
+            class="example-delete-tab-button"
+            [disabled]="tabs.length === 1"
+            (click)="removeTab(index)">
+    Delete Tab
+    </button>
+</mat-tab>
+</mat-tab-group>-->
+
+<mat-tab-group>
+    <mat-tab>
+        <ng-template mat-tab-label>
+            CBCS2015
+        </ng-template>
+        <br/>
+        <mat-list>
+                <h3 mat-subheader>Secured Papers</h3>
+                <mat-list-item *ngFor="let folder of folders">
+                  <i class="fa fa-file" aria-hidden=" true"></i>
+                    <h4 mat-line>{{folder.name}}</h4>
+                  <p mat-line> {{folder.updated | date}} </p>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+                <h3 mat-subheader>Archived Papers</h3>
+                <mat-list-item *ngFor="let note of notes">
+                <i class="fa fa-file" aria-hidden=" true"></i>    
+                  <h4 mat-line>{{note.name}}</h4>
+                  <p mat-line> {{note.updated | date}} </p>
+                </mat-list-item>
+            </mat-list>
+        <!--<form>
+            <mat-form-field>
+                <input matInput placeholder="">
+            </mat-form-field>&nbsp;
+            <mat-form-field>
+                <input matInput placeholder="Name">
+            </mat-form-field>&nbsp;
+            <button mat-stroked-button color="primary" type="submit" >Add Student</button>
+        </form>-->
+    </mat-tab>
+    <mat-tab>
+        <ng-template mat-tab-label>
+            CBCS2017
+        </ng-template>
+        <br/>
+        <mat-list>
+                <h3 mat-subheader>Secured Papers</h3>
+                
+                <mat-divider></mat-divider>
+                <h3 mat-subheader>Archived Papers</h3>
+                
+            </mat-list>
+        <!--<form>
+            <button mat-stroked-button color="primary" type="submit" >Import</button>
+        </form>-->
+    </mat-tab>
+</mat-tab-group>
+      

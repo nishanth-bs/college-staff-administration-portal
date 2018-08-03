@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import {MatPaginator, MatTableDataSource, MatSort} from '@angular/material';
+import { TeachersService, Teacher } from '../teachers.service';
 
 @Component({
   selector: 'app-table-teacher',
@@ -7,16 +8,22 @@ import {MatPaginator, MatTableDataSource, MatSort} from '@angular/material';
   styleUrls: ['./table-teacher.component.css']
 })
 export class TableTeacherComponent implements OnInit {
-
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
+  private _data : Teacher[];
+  constructor(private _teachersService : TeachersService){
+    
+    
+  }
+  displayedColumns: string[] = [ 'username','fullname'];
+  dataSource = new MatTableDataSource<Teacher>(this._data);
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
   ngOnInit() {
+    this._teachersService.getTeachers().subscribe(data => this._data = data);
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    //console.log(this._data)
   }
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();

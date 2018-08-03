@@ -6,6 +6,7 @@ import { TeachersComponent } from './teachers.component';
 import { PageHeaderModule } from '../../shared';
 import {AngularMaterial} from '../../angular-material';
 import { TableTeacherComponent } from './table-teacher/table-teacher.component';
+import { TeachersService } from './teachers.service';
 @NgModule({
   imports: [
     CommonModule,
@@ -13,6 +14,7 @@ import { TableTeacherComponent } from './table-teacher/table-teacher.component';
     PageHeaderModule,
     AngularMaterial
   ],
-  declarations: [TeachersComponent, TableTeacherComponent]
+  declarations: [TeachersComponent, TableTeacherComponent],
+  providers:[TeachersService]
 })
 export class TeachersModule { }
