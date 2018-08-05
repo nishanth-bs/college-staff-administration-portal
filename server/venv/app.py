@@ -24,5 +24,6 @@ jwt = JWTManager(app)   #Creates /auth endpoint
 
 if __name__ == '__main__':
   from MySQLDb import mysql
+  mysql.init_app(app)
   conn = mysql.connect()
-  app.run(Debug = True)
+  app.run(debug = True)
