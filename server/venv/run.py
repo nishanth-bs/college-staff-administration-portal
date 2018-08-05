@@ -213,12 +213,41 @@ class CollegeDepartments(Resource):
     #retrieve all the department names
     QUERY = "SELECT d.dept_abbr, d.dept_name FROM dept_info d"
     #dept = cursor.execute(QUERY)
+    """
+  [
+    {
+        "dept_abbr": "ISE",
+        "dept_name": "Information Science Engineering"
+    },
+    {
+        "dept_abbr": "CSE",
+        "dept_name": "Computer Science Engineering"
+    },
+    {
+        "dept_abbr": "",
+        "dept_name": "Principal"
+    },
+    {
+        "dept_abbr": "CIVIL",
+        "dept_name": "Civil"
+    }
+  ]
+    """
     df = pd.read_sql(QUERY,con=conn)
-    return df.to_dict(orient='records',lines=True)
+    return df.to_dict(orient='records')
 
   def post(self):
     #TODO: give super admin access
     #able to add new department
+    """
+      form data:
+      abbr = ME
+      name = Mechanical Engineering
+
+      possible errors: pymysql.err.IntegrityError: (1062, "Duplicate entry '***' for key 'dept_name'")
+    """
+    parser.add_argument('abbr')
+    parser.add_argument('name')
     data = parser.parse_args()
     abbr, name= data['abbr'], data['name']
     QUERY = "INSERT INTO `dept_info`(`dept_abbr`, `dept_name`)VALUES('%s','%s')"%(abbr,name)
@@ -235,6 +264,7 @@ class CollegeDepartments(Resource):
   def put(self):
     #TODO: give super admin access
     #edit the department details
+    
     return ''
   def delete(self):
     #todo: give super admin access
