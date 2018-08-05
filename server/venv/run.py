@@ -7,6 +7,9 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 import random, string
 import pandas as pd
 import json
+from webargs import fields,validate
+from webargs.flaskparser import  use_args, use_kwargs
+
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -140,7 +143,9 @@ class UserLogin(Resource):
     result_set = cursor.fetchone()
 
     if verify_hash(data['password'], result_set[4]):
-      access_token = create_access_token(identity=data['username'])
+      #setting the expiration time for the access token to infinite time
+      #TODO : Change this while deploying
+      access_token = create_access_token(identity=data['username'],expires_delta=False)
       refresh_token = create_refresh_token(identity=data['username'])
       return {
         #'message': 'Logged in as {}'.format(result_set[3]),#current_user.username),
@@ -210,10 +215,7 @@ class CollegeDepartments(Resource):
     #dept = cursor.execute(QUERY)
     df = pd.read_sql(QUERY,con=conn)
     return df.to_dict(orient='records',lines=True)
-    """res = {}
-    for k,i in enumerate(cursor):
-      res[k] = i
-    return res"""
+
   def post(self):
     #TODO: give super admin access
     #able to add new department
@@ -454,7 +456,6 @@ class IAMarksEdit(Resource):
     intnum, inter , intnum , quiz, intnum ,assign , sub, usn)
     try:
       # TODO:
-
       #print(QUERYp5)
       #print(QUERYp6)
       #cursor.execute(QUERYp5)
@@ -573,7 +574,9 @@ api.add_resource(TokenRefresh, '/token/refresh')
 api.add_resource(AllUsers, '/users')
 api.add_resource(SecretResource, '/secret')
 api.add_resource(AccessToken,'/access')
-api.add_resource(CollegeDepartments,'/departments')
+
+#Department resource --> GET, POST, PUT
+api.add_resource(CollegeDepartments,'/api/v1.0/protected/dept')
 api.add_resource(Teacher,'/api/v1.0/protected/teacher')
 api.add_resource(Students,'/api/v1.0/protected/students')
 api.add_resource(StudentsAttendance,'/studentsattendance')
