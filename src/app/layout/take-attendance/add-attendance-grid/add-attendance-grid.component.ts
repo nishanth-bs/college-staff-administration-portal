@@ -3,7 +3,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { parse } from 'url';
 import { StudentService } from '../../../services/student.service';
 import { UsnName } from '../../../interfacess';
- 
+import { TakeAttendanceService } from './../take-attendance.service';
 @Component({
   selector: 'app-add-attendance-grid',
   templateUrl: './add-attendance-grid.component.html',
@@ -14,9 +14,17 @@ export class AddAttendanceGridComponent implements OnInit {
   _sem : Number;
   _sec : String;
   _studentsList : UsnName[];
-  constructor(private _stud:StudentService, private _route:ActivatedRoute, private _router: Router) { }
-
+  constructor(private _stud:StudentService, private _route:ActivatedRoute, private _router: Router,private _localStudentService : TakeAttendanceService) { }
+  _data:any;
   ngOnInit() {
+    
+    this._localStudentService.getStudentList().subscribe(data =>this._data = data);
+    /* {
+      let res = data[0];
+      this._data = res['stud'];
+      console.log(this._data);
+    } */
+    console.log(this._data);
     this._route.paramMap.subscribe((params:ParamMap) => {
       let sem = parseInt(params.get('sem'));
       let sec = (params.get('sec'));

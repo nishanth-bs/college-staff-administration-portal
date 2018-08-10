@@ -1,6 +1,7 @@
 module.exports = function() {
   return {
-    one: require('./dept.json'),
-    TWW: require('./dept.json')
+    dept: require('./dept.json'),
+    students: require('./students.json'),
+    classes:require('./teachersclasses.json')
   }
 }

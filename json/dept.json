@@ -1,14 +1,35 @@
-{
-  "posts": [
-    { "id": 1, "NishNRH": "Post 1" },
-    { "id": 2, "title": "Post 2" },
-    { "id": 3, "title": "Post 3" }
-  ],
-  "comments": [
-    { "id": 1, "body": "some comment", "postId": 1 },
-    { "id": 2, "body": "some comment", "postId": 1 }
-  ],
-  "profile": {
-    "name": "typicode"
-  }
-}
+[
+	{
+		"dept":{
+			"id" :1,
+			"name":"Information Science",
+			"abbr" : "ISE"
+		},
+		"hod":{
+			"id" :1,
+			"name" :"Sudhamani"
+		}
+	},
+	{
+		"dept":{
+			"id" :1,
+			"name":"Information Science",
+			"abbr" : "ISE"
+		},
+		"hod":{
+			"id" :1,
+			"name" :"Sudhamani"
+		}
+	},
+	{
+		"dept":{
+			"id" :1,
+			"name":"Information Science",
+			"abbr" : "ISE"
+		},
+		"hod":{
+			"id" :1,
+			"name" :"Sudhamani"
+		}
+	}
+]

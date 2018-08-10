@@ -1,5 +1,5 @@
-<p>
-  take-attendance works!
-</p>
-<app-select-class></app-select-class>
-<app-add-attendance-grid></app-add-attendance-grid>
+<div [@routerTransition]>
+    <app-page-header1 [superheading]="'Teacher options'" [heading]="'Attendance'" [icon]="'fa-edit'"></app-page-header1>
+    <app-select-class></app-select-class>
+    <app-add-attendance-grid></app-add-attendance-grid>
+</div>
