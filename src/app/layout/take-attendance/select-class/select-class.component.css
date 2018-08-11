@@ -1,0 +1,7 @@
+.mat-card-div{
+    display: inline-block;
+}
+mat-card{
+    margin: 10px 10px;
+    cursor: pointer;
+}

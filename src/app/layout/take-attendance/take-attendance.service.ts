@@ -24,7 +24,7 @@ export class TakeAttendanceService {
     return throwError('Something bad happened, please try again later');
   };
 
-  getStudentList(){
+  getStudentList(id:number){
     return this._httpClient.get<any>(this._studentsUrl);
   }
 

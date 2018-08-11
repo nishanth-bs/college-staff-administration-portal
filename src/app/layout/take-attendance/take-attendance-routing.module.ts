@@ -5,7 +5,7 @@ import { AddAttendanceGridComponent } from './add-attendance-grid/add-attendance
 
 const routes: Routes = [
   { path:'', component:TakeAttendanceComponent},
-  { path:':classId', component:AddAttendanceGridComponent}
+  { path:'class/:id', component:TakeAttendanceComponent}
 ];
 
 @NgModule({

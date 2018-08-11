@@ -20,7 +20,7 @@ export class SelectClassComponent implements OnInit {
     //this._stud.getClasses().subscribe(data => this.classList = data);
   }
   showClassStudents(className){
-    this._router.navigate([className],{relativeTo:this._route});
+    this._router.navigate(['./class',className],{relativeTo:this._route});
   }
 
 }

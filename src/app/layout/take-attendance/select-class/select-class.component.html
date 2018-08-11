@@ -1,4 +1,6 @@
 <div class="login-page" [@routerTransition]></div>
-<li *ngFor ="let i of classList" >
-  <a (click)="showClassStudents(i)">{{i.id}}{{i.sem}}{{i.sec}}</a>
-</li>
+<div class="col-md-4 mat-card-div" *ngFor ="let i of classList">
+    <mat-card tabindex="0" id="{{i.id}}" (click)="showClassStudents($event.target.id)">
+      {{i.sem}}{{i.sec}}
+    </mat-card>
+</div>

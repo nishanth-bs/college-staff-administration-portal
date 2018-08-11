@@ -9,7 +9,7 @@ import { FormModule } from '../form/form.module';
 import {AngularMaterial} from '../../angular-material';
 import { PageHeaderModule1 } from '../../shared';
 //import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
+import {MatCardModule} from '@angular/material/card';
 import {MatGridListModule} from '@angular/material/grid-list';
 import { TakeAttendanceService } from './take-attendance.service';
 
@@ -27,7 +27,9 @@ const modules = [
     FormModule,
     modules,
     AngularMaterial,
-    PageHeaderModule1
+    PageHeaderModule1,
+    MatCardModule,
+    MatButtonModule
     
   ],
   exports:[

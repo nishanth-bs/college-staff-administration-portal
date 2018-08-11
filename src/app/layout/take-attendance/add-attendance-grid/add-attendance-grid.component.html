@@ -1,10 +1,41 @@
 
+<button mat-icon-button (click)="goBack()">
+  <i class= "fa fa-arrow-left"></i>
+</button>
+<mat-tab-group>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <i class="fa fa-pencil-square-o"></i>
+    </ng-template>
+    <mat-grid-list cols="5" rowHeight="2:1"  >
+      <mat-grid-tile *ngFor = "let i of _data" (click) = "toggleAttendance(i)" [style.background]= "i.att == 1? '#19b33c':'#e85261'">
+        {{i.stud.name}}
+      </mat-grid-tile>
+      
+    </mat-grid-list>
+    
+    <div class = "row">
+      <div class="col-md-6">
+        <button mat-raised-button color="warn" class="center" (click)="goBack()">
+          Cancel
+        </button>
+      </div>
+      
+      <div class="col-md-6">
+        <button mat-raised-button class="center green">
+          Submit
+        </button>
+      </div>
+    </div>
+  </mat-tab>
 
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <i class="fa fa-upload"></i>
+    </ng-template>
+    Upload option goes here!!
+  </mat-tab>
+</mat-tab-group>
 
-<mat-grid-list cols="5" rowHeight="2:1"  >
-  <mat-grid-tile *ngFor = "let i of _data" (click) = "toggleAttendance(i)" [style.background]= "i.att == 1? '#19b33c':'#e85261'">
-    {{i.stud.name}}
-  </mat-grid-tile>
-  
-</mat-grid-list>
-  
+      
+

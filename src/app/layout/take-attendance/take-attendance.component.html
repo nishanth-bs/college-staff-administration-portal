@@ -1,5 +1,5 @@
+<app-page-header1 [superheading]="'Teacher options'" [heading]="'Attendance'" [icon]="'fa-edit'"></app-page-header1>
 <div [@routerTransition]>
-    <app-page-header1 [superheading]="'Teacher options'" [heading]="'Attendance'" [icon]="'fa-edit'"></app-page-header1>
-    <app-select-class></app-select-class>
-    <app-add-attendance-grid></app-add-attendance-grid>
+    <app-select-class *ngIf="!_id"></app-select-class>
+    <app-add-attendance-grid [id]="_id" *ngIf = "_id"></app-add-attendance-grid>
 </div>
